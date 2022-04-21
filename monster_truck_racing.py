@@ -1,8 +1,10 @@
+# Add progressive difficulty for each round of racing
+
 # Import the Random library for use in the game
 import random
 class Truck:
     #Creates a truck class
-    def __init__(self, name, power, handling, health = float(10)):
+    def __init__(self, name, power, handling, health = 1.00):
         self.name = name
         self.power = power
         self.handling = handling
@@ -10,12 +12,12 @@ class Truck:
         self.is_broken = False
 
     def __repr__(self):
-        return "{name}. \nThis truck has a power rating of {power} out of 10 with a handling rating of {handling} out of 10. This truck has a health of {health}".format(name = self.name, power = self.power, handling = self.handling, health = self.health)
+        return "{name}. \nThis truck has a power rating of {power} out of 10 with a handling rating of {handling} out of 10. This truck has {health:.0%} health".format(name = self.name, power = self.power, handling = self.handling, health = self.health)
 
     def damaged(self, amount):
         # Truck's health decreases when damaged. The amount is how much risk the driver takes.
         if amount > 0:
-            self.health -= float(amount * random.random())
+            self.health -= float(amount * random.random() / 10)
             if self.health <= 0:
               self.health = float(0)
               self.is_broken = True
@@ -25,7 +27,7 @@ class Truck:
         self.is_broken = False
         # The fix can only increase the health of the truck by 2 points
         if self.health == 0:
-            self.health = float(2)
+            self.health = float(.2)
         print("You fixed {name} and can now race again!".format(name = self.name))
 
     def rep(self):
@@ -34,7 +36,7 @@ class Truck:
         if self.health == 0:
             self.fix()
         # Adds health to the truck, but can never get to max health from a repair
-        self.health += float((10-self.health)*.5)
+        self.health += float((1-self.health)*.6)
 
 
 class Driver:
@@ -65,11 +67,11 @@ class Driver:
         elif self.truck.is_broken:
             self.truck.fix()
             self.num_repairs -= 1
-            print("You made some repairs on {truck} and it now has a health rating of {health: .3}.".format(truck = self.truck.name, health = self.truck.health))
+            print("You made some repairs on {truck} and it now has {health:.0%} health.".format(truck = self.truck.name, health = self.truck.health))
         else:
             self.truck.rep()
             self.num_repairs -= 1
-            print("You made some repairs on {truck} and it now has a health rating of {health: .3}.".format(truck = self.truck.name, health = self.truck.health))
+            print("You made some repairs on {truck} and it now has {health:.0%} health.".format(truck = self.truck.name, health = self.truck.health))
 
 
 # Create a racing bracket as a dictionary
@@ -123,10 +125,10 @@ def racing(race_round):
 # Racing compares the values for the driver and truck and determines a winner
 def race(racer1, racer2):
     # Calculate the racing rating value for each racer
-    # 'racer.truck.health/10' scales the truck's power and handling
+    # 'racer.truck.health' scales the truck's power and handling
     # 'racer.risk' essentially increases the driver skill
-    racer1_rating = (racer1.truck.health/10)*(racer1.truck.power + racer1.truck.handling) * (racer1.skill * (1+racer1.risk/10))
-    racer2_rating = (racer2.truck.health/10)*(racer2.truck.power + racer2.truck.handling) * (racer2.skill * (1+racer1.risk/10))
+    racer1_rating = (racer1.truck.health)*(racer1.truck.power + racer1.truck.handling) * (racer1.skill * (1+racer1.risk/10))
+    racer2_rating = (racer2.truck.health)*(racer2.truck.power + racer2.truck.handling) * (racer2.skill * (1+racer1.risk/10))
     # Every race, the trucks can gain damage based on how much risk the driver takes
     racer1.truck.damaged(racer1.risk)
     racer2.truck.damaged(racer2.risk)
@@ -161,7 +163,7 @@ def racer_results(race_round):
             # Driver won the race
             driver.gain_skill() # Adds skill to the player
             #Tells the player how the truck was damaged during the race and how much health they have remaining
-            print('\nAfter the race your truck has a health level of {health:.3} out of 10.'.format(health = driver.truck.health))
+            print('\nAfter the race your truck has {health:.0%} health.'.format(health = driver.truck.health))
             # Asks driver if they want to make a repair before going on to the next round.
     if race_round == 'Finals':
         if driver.lost == True:
@@ -179,9 +181,10 @@ def between_rounds():
         input('Press "Enter" to repair the truck')
         driver.repair_truck()
     if (driver.lost == False) and (driver.truck.is_broken == False) and (driver.num_repairs > 0):
-        make_repair = input("Do you want to make a repair before the next race ('Y' or 'N')? You do not have to right now. ")
-        if make_repair.capitalize() == 'Y':
-            driver.repair_truck()  
+        if driver.truck.health < 1:
+            make_repair = input("Do you want to make a repair before the next race ('Y' or 'N')? You do not have to right now. ")
+            if make_repair.capitalize() == 'Y':
+                driver.repair_truck()  
 
 
 # Initializing the Truck class with all of the choices of trucks
@@ -259,7 +262,7 @@ print(driver)
 
 
 # Round 1
-print("="*10 + "Round 1" + "="*10)
+print("\n"+"="*10 + "Round 1" + "="*10)
 round = {}
 bracket_setup(8, 'Round 1')
 
@@ -270,7 +273,7 @@ racing('Round 1')
 
 
 # Round 2
-print("="*10 + "Round 2" + "="*10)
+print("\n"+"="*10 + "Round 2" + "="*10)
 round = {}
 bracket_setup(4, 'Round 2')
 
@@ -280,7 +283,7 @@ racing('Round 2')
 
 
 # Semi-Final Round
-print("="*10 + "Semi-Final Round" + "="*10)
+print("\n"+"="*10 + "Semi-Final Round" + "="*10)
 round = {}
 bracket_setup(2, 'Semi-finals')
 
@@ -291,7 +294,7 @@ racing('Semi-finals')
 
 
 # Final Round
-print("="*10 + "Final Round" + "="*10)
+print("\n"+"="*10 + "Final Round" + "="*10)
 round = {}
 bracket_setup(1, 'Finals')
 
