@@ -141,7 +141,7 @@ def race(racer1, racer2):
             print("->{racer1} defeated you.<-".format(racer1 = racer1.truck.name))
             driver.lost = True
         else:
-            print("{racer1} defeated {racer2}".format(racer1 = racer1.truck.name, racer2 = racer2.truck.name))
+            print("{racer1} porked {racer2}".format(racer1 = racer1.truck.name, racer2 = racer2.truck.name))
     if racer1_rating < racer2_rating:
         entrants.append(racer2)
         #print(str(racer2_rating) + '<' + str(racer1_rating))
