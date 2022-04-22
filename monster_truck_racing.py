@@ -52,7 +52,7 @@ class Driver:
         return "{name} is racing in {truck}! {name} starts out with a skill level of {skill} out of 10 and can gain skill points the more races they compete in. \nYou can only make one repair during the racing competition, so use it strategically.".format(name = self.name, skill = self.skill, truck = self.truck.name)
     
     def driver_lost(self):
-        print("\nYou lost the race and are now out of the competition.\n")
+        driver.lost = True
 
     def gain_skill(self):
         # For every race a driver wins, they gain some skill points
@@ -60,23 +60,29 @@ class Driver:
 
     def repair_truck(self):
         # You can choose to repair your truck
-        if self.num_repairs == 0:
-            print("You don't have enough parts to repair your truck.")
-        elif self.truck.is_broken:
+        if self.truck.is_broken == False and self.num_repairs == 0:
+            print('\nYou\'ve used up all of your repairs. You must continue racing with the truck as-is.')
+        if self.truck.is_broken and self.num_repairs > 0:
+            print('You\'re truck is broken. You must repair the truck to continue racing.')
+            input('Press "Enter" to repair the truck')
             self.truck.fix()
             self.num_repairs -= 1
             print("You made some repairs on {truck} and it now has {health:.0%} health.".format(truck = self.truck.name, health = self.truck.health))
         else:
-            self.truck.rep()
-            self.num_repairs -= 1
-            print("You made some repairs on {truck} and it now has {health:.0%} health.".format(truck = self.truck.name, health = self.truck.health))
+            if driver.truck.health < 1 and self.num_repairs > 0:
+                make_repair = input("Do you want to make a repair before the next race ('Y' or 'N')? You do not have to right now. ")
+                if make_repair.capitalize() == 'Y': 
+                    self.truck.rep()
+                    self.num_repairs -= 1
+                    print("You made some repairs on {truck} and it now has {health:.0%} health.".format(truck = self.truck.name, health = self.truck.health))
+        
 
 
 # Create a racing bracket as a dictionary
 def bracket_setup(num_races, race_round):
     input('Welcome to '+race_round+'! Press "Enter" to view the racing match-ups.\n')
     count = 0
-    while count < num_races: # To create the match-ups
+    while count < (num_races): # To create the match-ups
         key = random.choice(entrants) # randomly selects one competitor and assigns it to a key
         entrants.remove(key) # removes that competitor from the list for the next random selections
         value = random.choice(entrants)
@@ -113,12 +119,23 @@ def racing(race_round):
     print('\n\nThe racing round results are shown here:')
     for key, value in round.items():
         race(key, value)
-    if (driver in round.keys()) or (driver in round.values()):
-        racer_results(race_round)
-    if driver not in round.keys() and driver not in round.values() and race_round == 'the Finals':
-        print(f"\n{entrants[0].name} won the racing championship in {entrants[0].truck.name}!!!!!")
+    round_results()
     if race_round != 'the Finals':
-        between_rounds()
+        racer_updates()
+        if driver.lost == True:
+            pass
+        else:
+            driver.repair_truck()
+    else:
+        for key, value in results.items():
+            if key == driver:
+                print(f"\nYou beat {value.name} in {value.truck.name} in the Finals! \nYou have won the racing championship!!!!")
+            if value == driver:
+                print(f"\nYou lost to {key.name} in {key.truck.name} in the Finals! Better luck next time.")
+            if key != driver and value != driver:
+                print(f"\n{key.name} in {key.truck.name} beat {value.name} in {value.truck.name} in the Finals!\n{key.name} in {key.truck.name} is the racing champion!!!!!")
+
+
 
 # Racing compares the values for the driver and truck and determines a winner
 def race(racer1, racer2):
@@ -132,64 +149,42 @@ def race(racer1, racer2):
     racer2.truck.damaged(racer2.risk)
     # Compares the racer ratings for the race and prints the round results
     if racer1_rating >= racer2_rating:
-        entrants.append(racer1)
-        #print(str(racer1_rating) + '>=' + str(racer2_rating))
-        racer1.gain_skill()
-        if racer1 == driver:
-            print("->You defeated {racer2}!<-".format(racer2 = racer2.truck.name))
-        elif racer2 == driver:
-            print("->{racer1} defeated you.<-".format(racer1 = racer1.truck.name))
-            driver.lost = True
-        else:
-            print("{racer1} porked {racer2}".format(racer1 = racer1.truck.name, racer2 = racer2.truck.name))
+        results[racer1] = racer2
     if racer1_rating < racer2_rating:
-        entrants.append(racer2)
-        #print(str(racer2_rating) + '<' + str(racer1_rating))
-        racer2.gain_skill()
-        if racer1 == driver:
-            print("->{racer2} defeated you.<-".format(racer2 = racer2.truck.name))
-            driver.lost = True
-        elif racer2 == driver:
-            print("->You defeated {racer1}!<-".format(racer1 = racer1.truck.name))
+        results[racer2] = racer1
+
+#Displays the racing round results and adds skill to the winning driver
+def round_results():
+    for key, value in results.items():
+        key.gain_skill()
+        if key == driver:
+            print(f'->You defeated {value.truck.name}!<-')
+        if value == driver:
+            print(f'->{key.truck.name} defeated you<-')
+        if key != driver and value != driver:
+            print(f'{key.truck.name} defeated {value.truck.name}')
+
+# Adds the winners to the entrants list unless their truck is broken and cannot be repaired in which case the loser of that race will replace them
+def racer_updates():
+    summary = ''
+    for key, value in results.items():
+        if key.truck.is_broken == True and key.num_repairs == 0:
+            entrants.append(value)
+            print(f'{key.truck.name} is broken and cannot be repaired for the next race. {value.truck.name} will advance in place of {key.truck.name}')
+            if key == driver:
+                summary = 'Although, you won the race, you are out of the competition. You will have to watch the rest of the races as a spectator.'
+            if value == driver:
+                summary = f'Although you lost the race, {key.truck.name} is now broken and out of the competition. You take its place in the next round of racing.' + '\nAfter the race your truck has {health:.0%} health.'.format(health = driver.truck.health)
         else:
-            print("{racer2} defeated {racer1}".format(racer2 = racer2.truck.name, racer1 = racer1.truck.name))
-    return driver.lost
+            entrants.append(key)
+            if key == driver:
+                summary = f'You beat {value.truck.name} and are moving on to the next round!'+"\nYou now have a skill rating of {skill}!".format(skill = driver.skill) + '\nAfter the race your truck has {health:.0%} health.'.format(health = driver.truck.health)
+            if value == driver:
+                driver.driver_lost()
+                summary = 'You have lost the race and are now out of the competition. You will have to watch the rest of the races as a spectator.'
+    print("\n" + summary + "\n")
 
-
-# After the race, this function runs some driver and truck methods based on the player's outcome
-def racer_results(race_round):
-    if race_round != 'the Finals':
-        if driver.lost == True:
-            print('\nYou lost the race and are now out of the competition')
-        if driver.lost == False:
-            # Driver won the race
-            print("\nYou won your race and have gained some skill points! You now have a skill rating of {skill}!".format(skill = driver.skill))
-            #Tells the player how the truck was damaged during the race and how much health they have remaining
-            print('\nAfter the race your truck has {health:.0%} health.'.format(health = driver.truck.health))
-    if race_round == 'the Finals':
-        if driver.lost == True:
-            print('\nYou lost in the final race! Great job! See if you can win the championship next time!')
-        if driver.lost == False:
-            print('\n!!!!!!You won the championship! You are the top driver today!!!!!!!!!')
         
-def between_rounds():        
-    if (driver.lost == True):
-        print('\nSince you are out of the competition, you can\'t race but can watch the next round to see who wins.\n')
-    if ((driver.truck.is_broken == True) and (driver.num_repairs == 0)):
-        print('\nYou\'re truck is broken and you can\'t make anymore repairs. You can\'t race but can watch the next round to see who wins.\n')
-    if (driver.lost == False) and (driver.truck.is_broken == False) and (driver.num_repairs == 0):
-        print('\nYou\'ve used up all of your repairs. You must continue racing with the truck as-is.')
-    if (driver.lost == False) and (driver.truck.is_broken == True) and (driver.num_repairs > 0):
-        print('You\'re truck is broken. You must repair the truck to continue racing.')
-        input('Press "Enter" to repair the truck')
-        driver.repair_truck()
-    if (driver.lost == False) and (driver.truck.is_broken == False) and (driver.num_repairs > 0):
-        if driver.truck.health < 1:
-            make_repair = input("Do you want to make a repair before the next race ('Y' or 'N')? You do not have to right now. ")
-            if make_repair.capitalize() == 'Y':
-                driver.repair_truck()  
-
-
 # Initializing the Truck class with all of the choices of trucks
 a = Truck("Bigfoot", 8, 9)
 b = Truck("Grave Digger", 8, 10)
@@ -212,6 +207,7 @@ p = Truck("Rage", 7, 7)
 other_trucks = [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p] # Full list of trucks
 truck_choices = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] # A list of choices for user input selection
 chosen_truck = '' #Creating an empty variable. This will be assigned by the input choice from the player
+#summary = ''
 
 # --------Start of the Game play---------
 # Asks for the driver's name using input
@@ -264,17 +260,19 @@ print(driver)
 # Round 1
 print("\n"+"="*10 + "Round 1" + "="*10)
 round = {}
+results = {}
 bracket_setup(8, 'Round 1')
 
 input("\nPress 'Enter' to start the racing!")
 #Race
 racing('Round 1')
-
+#print(summary)
 
 
 # Round 2
 print("\n"+"="*10 + "Round 2" + "="*10)
 round = {}
+results = {}
 bracket_setup(4, 'Round 2')
 
 input("\nPress 'Enter' to start the racing!")
@@ -285,6 +283,7 @@ racing('Round 2')
 # Semi-Final Round
 print("\n"+"="*10 + "Semi-Final Round" + "="*10)
 round = {}
+results = {}
 bracket_setup(2, 'the Semi-finals')
 
 input("\nPress 'Enter' to start the racing!")
@@ -296,6 +295,7 @@ racing('the Semi-finals')
 # Final Round
 print("\n"+"="*10 + "Final Round" + "="*10)
 round = {}
+results = {}
 bracket_setup(1, 'the Finals')
 
 input("\nPress 'Enter' to start the racing!")
