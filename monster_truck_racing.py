@@ -1,7 +1,6 @@
-# Add progressive difficulty for each round of racing
-
 # Import the Random library for use in the game
 import random
+
 class Truck:
     #Creates a truck class
     def __init__(self, name, power, handling, health = 1.00):
@@ -12,7 +11,7 @@ class Truck:
         self.is_broken = False
 
     def __repr__(self):
-        return "{name}. \nThis truck has a power rating of {power} out of 10 with a handling rating of {handling} out of 10. This truck has {health:.0%} health".format(name = self.name, power = self.power, handling = self.handling, health = self.health)
+        return "{name}: \n       Power rating: {power} out of 10\n       Handling rating: {handling} out of 10".format(name = self.name, power = self.power, handling = self.handling)
 
     def damaged(self, amount):
         # Truck's health decreases when damaged. The amount is how much risk the driver takes.
@@ -41,7 +40,7 @@ class Truck:
 
 class Driver:
     #Creates a driver class
-    def __init__(self, name, truck, skill = 1, lost = False, num_repairs = 1, risk = -1):
+    def __init__(self, name, truck, skill = 3, lost = False, num_repairs = 1, risk = -1):
         self.name = name
         self.truck = truck
         self.skill = skill
@@ -56,9 +55,8 @@ class Driver:
         print("\nYou lost the race and are now out of the competition.\n")
 
     def gain_skill(self):
-        # For every race you participate in, you gain some skill points
+        # For every race a driver wins, they gain some skill points
         self.skill += 1
-        print("\nYou won your race and have gained some skill points! You now have a skill rating of {skill}!".format(skill = self.skill))
 
     def repair_truck(self):
         # You can choose to repair your truck
@@ -78,7 +76,7 @@ class Driver:
 def bracket_setup(num_races, race_round):
     input('Welcome to '+race_round+'! Press "Enter" to view the racing match-ups.\n')
     count = 0
-    while count < num_races: # To create 8 match-ups
+    while count < num_races: # To create the match-ups
         key = random.choice(entrants) # randomly selects one competitor and assigns it to a key
         entrants.remove(key) # removes that competitor from the list for the next random selections
         value = random.choice(entrants)
@@ -117,9 +115,9 @@ def racing(race_round):
         race(key, value)
     if (driver in round.keys()) or (driver in round.values()):
         racer_results(race_round)
-    if driver not in round.keys() and driver not in round.values() and race_round == 'Finals':
-        print(f"\n{entrants[0].name} won the championship racing in {entrants[0].truck.name}!!!!!")
-    if race_round != 'Finals':
+    if driver not in round.keys() and driver not in round.values() and race_round == 'the Finals':
+        print(f"\n{entrants[0].name} won the racing championship in {entrants[0].truck.name}!!!!!")
+    if race_round != 'the Finals':
         between_rounds()
 
 # Racing compares the values for the driver and truck and determines a winner
@@ -135,6 +133,8 @@ def race(racer1, racer2):
     # Compares the racer ratings for the race and prints the round results
     if racer1_rating >= racer2_rating:
         entrants.append(racer1)
+        #print(str(racer1_rating) + '>=' + str(racer2_rating))
+        racer1.gain_skill()
         if racer1 == driver:
             print("->You defeated {racer2}!<-".format(racer2 = racer2.truck.name))
         elif racer2 == driver:
@@ -144,6 +144,8 @@ def race(racer1, racer2):
             print("{racer1} defeated {racer2}".format(racer1 = racer1.truck.name, racer2 = racer2.truck.name))
     if racer1_rating < racer2_rating:
         entrants.append(racer2)
+        #print(str(racer2_rating) + '<' + str(racer1_rating))
+        racer2.gain_skill()
         if racer1 == driver:
             print("->{racer2} defeated you.<-".format(racer2 = racer2.truck.name))
             driver.lost = True
@@ -156,24 +158,25 @@ def race(racer1, racer2):
 
 # After the race, this function runs some driver and truck methods based on the player's outcome
 def racer_results(race_round):
-    if race_round != 'Finals':
+    if race_round != 'the Finals':
         if driver.lost == True:
             print('\nYou lost the race and are now out of the competition')
         if driver.lost == False:
             # Driver won the race
-            driver.gain_skill() # Adds skill to the player
+            print("\nYou won your race and have gained some skill points! You now have a skill rating of {skill}!".format(skill = driver.skill))
             #Tells the player how the truck was damaged during the race and how much health they have remaining
             print('\nAfter the race your truck has {health:.0%} health.'.format(health = driver.truck.health))
-            # Asks driver if they want to make a repair before going on to the next round.
-    if race_round == 'Finals':
+    if race_round == 'the Finals':
         if driver.lost == True:
             print('\nYou lost in the final race! Great job! See if you can win the championship next time!')
         if driver.lost == False:
             print('\n!!!!!!You won the championship! You are the top driver today!!!!!!!!!')
         
 def between_rounds():        
-    if (driver.lost == True) or (driver.truck.is_broken == True and driver.num_repairs == 0):
+    if (driver.lost == True):
         print('\nSince you are out of the competition, you can\'t race but can watch the next round to see who wins.\n')
+    if ((driver.truck.is_broken == True) and (driver.num_repairs == 0)):
+        print('\nYou\'re truck is broken and you can\'t make anymore repairs. You can\'t race but can watch the next round to see who wins.\n')
     if (driver.lost == False) and (driver.truck.is_broken == False) and (driver.num_repairs == 0):
         print('\nYou\'ve used up all of your repairs. You must continue racing with the truck as-is.')
     if (driver.lost == False) and (driver.truck.is_broken == True) and (driver.num_repairs > 0):
@@ -198,12 +201,12 @@ g = Truck("Son-uva Digger", 9, 10)
 h = Truck("Max-D", 9, 8)
 i = Truck("Blue Thunder", 8, 9)
 j = Truck("Bounty Hunter", 9, 9)
-k = Truck("Iron Outlaw", 8, 9)
-l = Truck("Over Bored", 8, 9)
-m = Truck("El Toro Loco", 8, 9)
-n = Truck("Stone Crusher", 8, 9)
-o = Truck("Raminator", 8, 9)
-p = Truck("Rage", 8, 9)
+k = Truck("Iron Outlaw", 8, 8)
+l = Truck("Over Bored", 9, 9)
+m = Truck("El Toro Loco", 8, 7)
+n = Truck("Stone Crusher", 8, 7)
+o = Truck("Raminator", 7, 9)
+p = Truck("Rage", 7, 7)
 
 # Creating variables
 other_trucks = [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p] # Full list of trucks
@@ -215,10 +218,10 @@ chosen_truck = '' #Creating an empty variable. This will be assigned by the inpu
 driver_name = input("Welcome to the the monster truck race! Please enter your name: ")
 
 # Choose difficulty rating
-difficulty = 4 - int(input("Hi " + driver_name + "! What difficulty rating would you like? Type the number corresponding to the difficulty rating: \n1) Easy \n2) Medium \n3) Difficult\n"))
+difficulty = int(input("Hi " + driver_name + "! What difficulty rating would you like? Type the number corresponding to the difficulty rating: \n1) Easy \n2) Medium \n3) Difficult\n"))
 
 # Uses input to allow the player to choose their truck (they must choose a letter)
-choice = input(f"What truck would you like to drive? Type the letter of the truck you choose: \na) {a.name} \nb) {b.name} \nc) {c.name} \nd) {d.name} \ne) {e.name} \nf) {f.name} \ng) {g.name} \nh) {h.name} \ni) {i.name} \nj) {j.name} \nk) {k.name} \nl) {l.name} \nm) {m.name} \nn) {n.name} \no) {o.name} \np) {p.name} \n")
+choice = input(f"What truck would you like to drive? Type the letter of the truck you choose: \na) {a} \nb) {b} \nc) {c} \nd) {d} \ne) {e} \nf) {f} \ng) {g} \nh) {h} \ni) {i} \nj) {j} \nk) {k} \nl) {l} \nm) {m} \nn) {n} \no) {o} \np) {p} \n")
 
 # If a choice does not match the pre-defined list of truck_choices, it will prompt for a choice again
 while choice not in truck_choices:
@@ -232,34 +235,31 @@ chosen_truck = other_trucks[truck_choices.index(choice)]
 other_trucks.remove(chosen_truck)
 
 # Displays the truck chosen and then waits for input to continue
-input("You have chosen " + str(chosen_truck) + "\nPress 'Enter' to continue.\n")
+input("You have chosen to drive " + str(chosen_truck.name) +"!" + "\nPress 'Enter' to continue.\n")
 
 # Assigns the Driver class with the driver's names and their trucks
-driver = Driver(driver_name, chosen_truck, difficulty)
-opponent1 = Driver('John', other_trucks[0])
-opponent2 = Driver('Jeff', other_trucks[1])
-opponent3 = Driver('Jane', other_trucks[2])
-opponent4 = Driver('Julia', other_trucks[3])
-opponent5 = Driver('Julio', other_trucks[4])
-opponent6 = Driver('Jaime', other_trucks[5])
-opponent7 = Driver('James', other_trucks[6])
-opponent8 = Driver('Jurickson', other_trucks[7])
-opponent9 = Driver('Javier', other_trucks[8])
-opponent10 = Driver('Jesse', other_trucks[9])
-opponent11 = Driver('Jeremy', other_trucks[10])
-opponent12 = Driver('Josh', other_trucks[11])
-opponent13 = Driver('Jake', other_trucks[12])
-opponent14 = Driver('Jen', other_trucks[13])
-opponent15 = Driver('Jessica', other_trucks[14])
+driver = Driver(driver_name, chosen_truck)
+opponent1 = Driver('John', other_trucks[0], random.randint(1, difficulty))
+opponent2 = Driver('Jeff', other_trucks[1], random.randint(1, difficulty))
+opponent3 = Driver('Jane', other_trucks[2], random.randint(1, difficulty))
+opponent4 = Driver('Julia', other_trucks[3], random.randint(1, difficulty))
+opponent5 = Driver('Julio', other_trucks[4], random.randint(1, difficulty))
+opponent6 = Driver('Jaime', other_trucks[5], random.randint(1, difficulty))
+opponent7 = Driver('James', other_trucks[6], random.randint(1, difficulty))
+opponent8 = Driver('Jurickson', other_trucks[7], random.randint(1, difficulty))
+opponent9 = Driver('Javier', other_trucks[8], random.randint(1, difficulty))
+opponent10 = Driver('Jesse', other_trucks[9], random.randint(1, difficulty))
+opponent11 = Driver('Jeremy', other_trucks[10], random.randint(1, difficulty))
+opponent12 = Driver('Josh', other_trucks[11], random.randint(1, difficulty))
+opponent13 = Driver('Jake', other_trucks[12], random.randint(1, difficulty))
+opponent14 = Driver('Jen', other_trucks[13], random.randint(1, difficulty))
+opponent15 = Driver('Jessica', other_trucks[14], random.randint(1, difficulty))
 
 # Creates an entrants list for use in the function 'bracket_setup' to create the racing match-ups
 entrants = [driver, opponent1, opponent2, opponent3, opponent4, opponent5, opponent6, opponent7, opponent8, opponent9, opponent10, opponent11, opponent12, opponent13, opponent14, opponent15]
 
 # Tell the player about their driver
 print(driver)
-
-
-
 
 # Round 1
 print("\n"+"="*10 + "Round 1" + "="*10)
@@ -285,19 +285,19 @@ racing('Round 2')
 # Semi-Final Round
 print("\n"+"="*10 + "Semi-Final Round" + "="*10)
 round = {}
-bracket_setup(2, 'Semi-finals')
+bracket_setup(2, 'the Semi-finals')
 
 input("\nPress 'Enter' to start the racing!")
 #Race
-racing('Semi-finals')
+racing('the Semi-finals')
 
 
 
 # Final Round
 print("\n"+"="*10 + "Final Round" + "="*10)
 round = {}
-bracket_setup(1, 'Finals')
+bracket_setup(1, 'the Finals')
 
 input("\nPress 'Enter' to start the racing!")
 #Race
-racing('Finals')
+racing('the Finals')
