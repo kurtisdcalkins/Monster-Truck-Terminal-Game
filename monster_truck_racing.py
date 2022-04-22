@@ -52,6 +52,7 @@ class Driver:
         return "{name} is racing in {truck}! {name} starts out with a skill level of {skill} out of 10 and can gain skill points the more races they compete in. \nYou can only make one repair during the racing competition, so use it strategically.".format(name = self.name, skill = self.skill, truck = self.truck.name)
     
     def driver_lost(self):
+        # Sets the driver.lost to True, meaning they are out of the race
         driver.lost = True
 
     def gain_skill(self):
@@ -59,7 +60,7 @@ class Driver:
         self.skill += 1
 
     def repair_truck(self):
-        # You can choose to repair your truck
+        # After each race, this function assesses whether you can repair the truck or not
         if self.truck.is_broken == False and self.num_repairs == 0:
             print('\nYou\'ve used up all of your repairs. You must continue racing with the truck as-is.')
         if self.truck.is_broken and self.num_repairs > 0:
@@ -77,7 +78,7 @@ class Driver:
                     print("You made some repairs on {truck} and it now has {health:.0%} health.".format(truck = self.truck.name, health = self.truck.health))
         
 
-
+# Functions for the racing competition
 # Create a racing bracket as a dictionary
 def bracket_setup(num_races, race_round):
     input('Welcome to '+race_round+'! Press "Enter" to view the racing match-ups.\n')
@@ -114,27 +115,6 @@ def bracket_setup(num_races, race_round):
         print(f'You have chosen a risk level of: {driver.risk}')   
     else:
         print('\nYou\'re out of the competition. See who wins below!')
-    
-def racing(race_round):
-    print('\n\nThe racing round results are shown here:')
-    for key, value in round.items():
-        race(key, value)
-    round_results()
-    if race_round != 'the Finals':
-        racer_updates()
-        if driver.lost == True:
-            pass
-        else:
-            driver.repair_truck()
-    else:
-        for key, value in results.items():
-            if key == driver:
-                print(f"\nYou beat {value.name} in {value.truck.name} in the Finals! \nYou have won the racing championship!!!!")
-            if value == driver:
-                print(f"\nYou lost to {key.name} in {key.truck.name} in the Finals! Better luck next time.")
-            if key != driver and value != driver:
-                print(f"\n{key.name} in {key.truck.name} beat {value.name} in {value.truck.name} in the Finals!\n{key.name} in {key.truck.name} is the racing champion!!!!!")
-
 
 
 # Racing compares the values for the driver and truck and determines a winner
@@ -184,7 +164,31 @@ def racer_updates():
                 summary = 'You have lost the race and are now out of the competition. You will have to watch the rest of the races as a spectator.'
     print("\n" + summary + "\n")
 
-        
+# The racing control flow for each racing round
+def racing(race_round):
+    print('\n\nThe racing round results are shown here:')
+    for key, value in round.items():
+        race(key, value)
+    round_results()
+    if race_round != 'the Finals':
+        racer_updates()
+        if driver.lost == True:
+            pass
+        else:
+            driver.repair_truck()
+    else:
+        for key, value in results.items():
+            if key == driver:
+                print(f"\nYou beat {value.name} in {value.truck.name} in the Finals! \nYou have won the racing championship!!!!")
+            if value == driver:
+                print(f"\nYou lost to {key.name} in {key.truck.name} in the Finals! Better luck next time.")
+            if key != driver and value != driver:
+                print(f"\n{key.name} in {key.truck.name} beat {value.name} in {value.truck.name} in the Finals!\n{key.name} in {key.truck.name} is the racing champion!!!!!")
+
+
+
+
+
 # Initializing the Truck class with all of the choices of trucks
 a = Truck("Bigfoot", 8, 9)
 b = Truck("Grave Digger", 8, 10)
@@ -208,6 +212,8 @@ other_trucks = [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p] # Full list of t
 truck_choices = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] # A list of choices for user input selection
 chosen_truck = '' #Creating an empty variable. This will be assigned by the input choice from the player
 #summary = ''
+
+
 
 # --------Start of the Game play---------
 # Asks for the driver's name using input
@@ -259,10 +265,9 @@ print(driver)
 
 # Round 1
 print("\n"+"="*10 + "Round 1" + "="*10)
-round = {}
-results = {}
+round = {} # Creates an empty dictionary to be populated with the racing match-ups
+results = {} # Creates an empty dictionary to be populated by the winners as keys and losers as values
 bracket_setup(8, 'Round 1')
-
 input("\nPress 'Enter' to start the racing!")
 #Race
 racing('Round 1')
@@ -271,10 +276,9 @@ racing('Round 1')
 
 # Round 2
 print("\n"+"="*10 + "Round 2" + "="*10)
-round = {}
-results = {}
+round = {} # Creates an empty dictionary to be populated with the racing match-ups
+results = {} # Creates an empty dictionary to be populated by the winners as keys and losers as values
 bracket_setup(4, 'Round 2')
-
 input("\nPress 'Enter' to start the racing!")
 #Race
 racing('Round 2')
@@ -282,22 +286,19 @@ racing('Round 2')
 
 # Semi-Final Round
 print("\n"+"="*10 + "Semi-Final Round" + "="*10)
-round = {}
-results = {}
+round = {} # Creates an empty dictionary to be populated with the racing match-ups
+results = {} # Creates an empty dictionary to be populated by the winners as keys and losers as values
 bracket_setup(2, 'the Semi-finals')
-
 input("\nPress 'Enter' to start the racing!")
 #Race
 racing('the Semi-finals')
 
 
-
 # Final Round
 print("\n"+"="*10 + "Final Round" + "="*10)
-round = {}
-results = {}
+round = {} # Creates an empty dictionary to be populated with the racing match-ups
+results = {} # Creates an empty dictionary to be populated by the winners as keys and losers as values
 bracket_setup(1, 'the Finals')
-
 input("\nPress 'Enter' to start the racing!")
 #Race
 racing('the Finals')
